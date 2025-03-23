@@ -1,14 +1,15 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
-import { Send, BookOpen, Sparkles, LightbulbIcon } from 'lucide-react';
+import { Send, BookOpen, Sparkles, LightbulbIcon, Mic, MicOff, PaperclipIcon, Headphones } from 'lucide-react';
+import { Input } from "@/components/ui/input";
 
 interface ChatMessage {
   role: 'student' | 'assistant';
   content: string;
   timestamp: Date;
+  attachment?: string;
 }
 
 interface StudentProfile {
@@ -33,17 +34,38 @@ const getGradeLevel = (grade: string): 'elementary' | 'middle' | 'high' | 'colle
 const generateAssistantResponse = (message: string, profile: StudentProfile): string => {
   const gradeLevel = getGradeLevel(profile.grade);
   
-  // Elementary level responses
   if (gradeLevel === 'elementary') {
     if (message.toLowerCase().includes('count')) {
       return `Hi ${profile.name}! Counting is fun! Let's use some pictures to help. 🍎🍎🍎 How many apples do you see? Count them one by one, pointing at each apple as you count. Take your time!`;
     }
-    if (message.toLowerCase().includes('add') || message.toLowerCase().includes('plus')) {
-      return `Hi ${profile.name}! Let's think about addition like putting groups together. If you have 2 toys and get 3 more toys, you can count all the toys to find out how many you have now. Can you try drawing the toys and counting them?`;
+    if (message.toLowerCase().includes('learning counting') || message.toLowerCase().includes('learn') && message.toLowerCase().includes('number')) {
+      return `Great, ${profile.name}! Let's learn counting from 1 to 10. We'll go one by one:
+      
+1️⃣ - One: Show me 1 finger!
+2️⃣ - Two: Can you show me 2 fingers?
+3️⃣ - Three: Now try showing 3 fingers!
+4️⃣ - Four: Can you count to 4?
+5️⃣ - Five: That's one whole hand! 🖐️
+6️⃣ - Six: Keep going!
+7️⃣ - Seven: You're doing great!
+8️⃣ - Eight: Almost there!
+9️⃣ - Nine: Just one more!
+🔟 - Ten: Excellent job counting to 10! 🎉
+      
+Which number would you like to practice more?`;
+    }
+    if (message.toLowerCase().includes('apple')) {
+      const userCount = message.match(/\d+/);
+      const actualCount = 3;
+      
+      if (userCount && parseInt(userCount[0]) === actualCount) {
+        return `That's correct, ${profile.name}! 🎉 There are exactly 3 apples. You're doing a great job counting!`;
+      } else {
+        return `Let's try counting the apples again, ${profile.name}. Look at each apple emoji 🍎🍎🍎 and count them one by one. How many do you see?`;
+      }
     }
   }
   
-  // Middle school level responses
   if (gradeLevel === 'middle') {
     if (message.toLowerCase().includes('fraction')) {
       return `Hey ${profile.name}! Fractions represent parts of a whole. Think of a pizza cut into 8 slices - each slice is 1/8 of the whole pizza. When you're adding or subtracting fractions, they need to have the same denominator (the bottom number). Would you like me to explain how to find a common denominator?`;
@@ -53,7 +75,6 @@ const generateAssistantResponse = (message: string, profile: StudentProfile): st
     }
   }
   
-  // High school level responses
   if (gradeLevel === 'high') {
     if (message.toLowerCase().includes('quadratic')) {
       return `Hi ${profile.name}! For quadratic equations, remember the formula: x = (-b ± √(b² - 4ac)) / 2a where ax² + bx + c = 0. First, identify your a, b, and c values, then plug them into the formula. Would you like to try an example together?`;
@@ -63,7 +84,6 @@ const generateAssistantResponse = (message: string, profile: StudentProfile): st
     }
   }
   
-  // College level responses
   if (gradeLevel === 'college') {
     if (message.toLowerCase().includes('calculus')) {
       return `Hi ${profile.name}! In calculus, we're often looking at rates of change or accumulation. For integration, remember it's the opposite of differentiation - you're finding the area under a curve. What specific calculus problem are you working on?`;
@@ -73,7 +93,6 @@ const generateAssistantResponse = (message: string, profile: StudentProfile): st
     }
   }
   
-  // Generic responses if no specific keywords are matched
   const genericResponses = [
     `Hi ${profile.name}! I'd be happy to help with your homework. Could you tell me more about what you're working on?`,
     `Hey ${profile.name}! Let's figure this out together. Can you share the specific question or problem you're trying to solve?`,
@@ -84,22 +103,37 @@ const generateAssistantResponse = (message: string, profile: StudentProfile): st
   return genericResponses[Math.floor(Math.random() * genericResponses.length)];
 };
 
+const textToSpeech = (text: string) => {
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.rate = 0.9;
+  utterance.pitch = 1.0;
+  window.speechSynthesis.speak(utterance);
+};
+
+const stopSpeech = () => {
+  window.speechSynthesis.cancel();
+};
+
 const HomeworkChat = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [profile, setProfile] = useState<StudentProfile | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [fileAttachment, setFileAttachment] = useState<File | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
 
   useEffect(() => {
-    // Load profile from localStorage
     const storedProfile = localStorage.getItem('studentProfile');
     if (storedProfile) {
       const parsedProfile = JSON.parse(storedProfile);
       setProfile(parsedProfile);
       
-      // Add welcome message
       setMessages([
         {
           role: 'assistant',
@@ -108,28 +142,40 @@ const HomeworkChat = () => {
         }
       ]);
     }
+
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      console.log('Speech recognition is supported in this browser');
+    } else {
+      console.log('Speech recognition is not supported in this browser');
+    }
+
+    return () => {
+      stopSpeech();
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+        mediaRecorderRef.current.stop();
+      }
+    };
   }, []);
 
   useEffect(() => {
-    // Scroll to bottom when messages change
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   const handleSendMessage = () => {
-    if (!input.trim() || !profile) return;
+    if ((!input.trim() && !fileAttachment) || !profile) return;
     
-    // Add student message
     const studentMessage: ChatMessage = {
       role: 'student',
       content: input,
-      timestamp: new Date()
+      timestamp: new Date(),
+      attachment: fileAttachment ? URL.createObjectURL(fileAttachment) : undefined
     };
     
     setMessages(prev => [...prev, studentMessage]);
     setInput('');
+    setFileAttachment(null);
     setIsLoading(true);
     
-    // Simulate AI thinking
     setTimeout(() => {
       const assistantResponse = generateAssistantResponse(input, profile);
       
@@ -156,7 +202,6 @@ const HomeworkChat = () => {
     
     setIsLoading(true);
     
-    // Simulate AI generating a hint
     setTimeout(() => {
       const hintMessage: ChatMessage = {
         role: 'assistant',
@@ -174,6 +219,130 @@ const HomeworkChat = () => {
     }, 800);
   };
 
+  const toggleRecording = async () => {
+    if (isRecording) {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+        mediaRecorderRef.current.stop();
+      }
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.onstart = () => {
+        setIsRecording(true);
+        toast({
+          title: "Recording started",
+          description: "Speak clearly into your microphone"
+        });
+      };
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        setIsRecording(false);
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
+        
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        
+        if (SpeechRecognition) {
+          const recognition = new SpeechRecognition();
+          recognition.lang = 'en-US';
+          
+          recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            setInput(transcript);
+            
+            toast({
+              title: "Speech recognized",
+              description: "Check and edit if needed before sending"
+            });
+          };
+          
+          recognition.onerror = (event) => {
+            console.error('Speech recognition error', event.error);
+            toast({
+              title: "Could not recognize speech",
+              description: "Please type your message instead",
+              variant: "destructive"
+            });
+          };
+          
+          recognition.start();
+        } else {
+          toast({
+            title: "Speech recognition not supported",
+            description: "Please type your message instead",
+            variant: "destructive"
+          });
+        }
+        
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorder.start();
+    } catch (error) {
+      console.error('Error accessing microphone', error);
+      toast({
+        title: "Microphone access denied",
+        description: "Please enable microphone access and try again",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleFileAttachment = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: "Please select a file smaller than 5MB",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      setFileAttachment(file);
+      toast({
+        title: "File attached",
+        description: `${file.name} ready to send`
+      });
+    }
+  };
+
+  const speakMessage = (message: string) => {
+    if (isSpeaking) {
+      stopSpeech();
+      setIsSpeaking(false);
+      return;
+    }
+    
+    setIsSpeaking(true);
+    textToSpeech(message);
+    
+    const utterance = new SpeechSynthesisUtterance(message);
+    utterance.onend = () => {
+      setIsSpeaking(false);
+    };
+    
+    window.speechSynthesis.speak(utterance);
+  };
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -184,12 +353,35 @@ const HomeworkChat = () => {
             style={{ animationDelay: `${index * 0.1}s` }}
           >
             <div
-              className={message.role === 'student' ? 'chat-bubble-student' : 'chat-bubble-assistant'}
+              className={`${message.role === 'student' ? 'chat-bubble-student' : 'chat-bubble-assistant'} ${message.attachment ? 'space-y-2' : ''}`}
             >
               <p className="whitespace-pre-wrap">{message.content}</p>
-              <p className="text-xs opacity-70 mt-1">
-                {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </p>
+              
+              {message.attachment && (
+                <div className="mt-2 border rounded p-2">
+                  <a href={message.attachment} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline flex items-center">
+                    <PaperclipIcon className="h-4 w-4 mr-1" />
+                    View attachment
+                  </a>
+                </div>
+              )}
+              
+              <div className="flex justify-between items-center mt-1">
+                <p className="text-xs opacity-70">
+                  {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </p>
+                
+                {message.role === 'assistant' && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 px-1"
+                    onClick={() => speakMessage(message.content)}
+                  >
+                    <Headphones className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         ))}
@@ -236,7 +428,33 @@ const HomeworkChat = () => {
             <BookOpen className="h-4 w-4" />
             <span>Resources</span>
           </Button>
+          
+          <Button
+            variant={isRecording ? "destructive" : "outline"}
+            size="sm"
+            onClick={toggleRecording}
+            className="flex items-center space-x-1 ml-auto"
+          >
+            {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+            <span>{isRecording ? "Stop" : "Voice"}</span>
+          </Button>
         </div>
+        
+        {fileAttachment && (
+          <div className="mb-2 p-2 bg-gray-50 rounded-md flex items-center justify-between">
+            <div className="truncate text-sm">
+              <PaperclipIcon className="h-4 w-4 inline mr-1" />
+              {fileAttachment.name}
+            </div>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => setFileAttachment(null)}
+            >
+              ✕
+            </Button>
+          </div>
+        )}
         
         <div className="flex space-x-2">
           <Textarea
@@ -247,14 +465,34 @@ const HomeworkChat = () => {
             className="flex-1 resize-none"
             rows={2}
           />
-          <Button
-            onClick={handleSendMessage}
-            disabled={!input.trim() || isLoading}
-            className="self-end bg-assistant-blue hover:bg-assistant-accent button-transition"
-          >
-            <Send className="h-5 w-5" />
-          </Button>
+          
+          <div className="flex flex-col space-y-2 self-end">
+            <Button
+              onClick={handleFileAttachment}
+              variant="outline"
+              size="icon"
+              className="rounded-full"
+            >
+              <PaperclipIcon className="h-5 w-5" />
+            </Button>
+            
+            <Button
+              onClick={handleSendMessage}
+              disabled={(!input.trim() && !fileAttachment) || isLoading}
+              className="self-end bg-assistant-blue hover:bg-assistant-accent button-transition"
+            >
+              <Send className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
+        
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          accept="image/*,.pdf,.doc,.docx,.txt"
+          className="hidden"
+        />
       </div>
     </div>
   );

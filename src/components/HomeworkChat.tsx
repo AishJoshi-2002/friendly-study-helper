@@ -252,10 +252,10 @@ const HomeworkChat = () => {
         setIsRecording(false);
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
         
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
         
-        if (SpeechRecognition) {
-          const recognition = new SpeechRecognition();
+        if (SpeechRecognitionAPI) {
+          const recognition = new SpeechRecognitionAPI();
           recognition.lang = 'en-US';
           
           recognition.onresult = (event) => {

@@ -31,8 +31,19 @@ const getGradeLevel = (grade: string): 'elementary' | 'middle' | 'high' | 'colle
   }
 };
 
-const generateAssistantResponse = (message: string, profile: StudentProfile): string => {
+const generateAssistantResponse = (message: string, profile: StudentProfile, previousMessages: ChatMessage[]): string => {
   const gradeLevel = getGradeLevel(profile.grade);
+  
+  const lastFewMessages = previousMessages.slice(-4);
+  const hasRepeatedQuestion = lastFewMessages.some(
+    msg => msg.role === 'assistant' && 
+    (msg.content.includes("Could you tell me more") || 
+     msg.content.includes("What have you tried so far"))
+  );
+  
+  if (hasRepeatedQuestion) {
+    return `Let's work on this together, ${profile.name}. I'll help guide you through it step by step.`;
+  }
   
   if (gradeLevel === 'elementary') {
     if (message.toLowerCase().includes('count')) {
@@ -94,10 +105,11 @@ Which number would you like to practice more?`;
   }
   
   const genericResponses = [
-    `Hi ${profile.name}! I'd be happy to help with your homework. Could you tell me more about what you're working on?`,
-    `Hey ${profile.name}! Let's figure this out together. Can you share the specific question or problem you're trying to solve?`,
-    `Hello ${profile.name}! I'm here to guide you, not just give answers. What part of this problem is challenging for you?`,
-    `Hi ${profile.name}! Learning works best when we break problems down into steps. What have you tried so far?`
+    `Hi ${profile.name}! I'd be happy to help with your homework. What specific topic are you studying?`,
+    `Hey ${profile.name}! What question would you like help with today?`,
+    `Hello ${profile.name}! I'm your homework assistant. Let me know what you'd like to work on!`,
+    `Hi ${profile.name}! Ready to tackle some homework? What subject are we exploring today?`,
+    `Hey ${profile.name}! What specific problem would you like me to help you understand?`
   ];
   
   return genericResponses[Math.floor(Math.random() * genericResponses.length)];
@@ -177,7 +189,7 @@ const HomeworkChat = () => {
     setIsLoading(true);
     
     setTimeout(() => {
-      const assistantResponse = generateAssistantResponse(input, profile);
+      const assistantResponse = generateAssistantResponse(input, profile, messages);
       
       const assistantMessage: ChatMessage = {
         role: 'assistant',

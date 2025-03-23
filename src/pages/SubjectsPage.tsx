@@ -2,12 +2,12 @@
 import React from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookOpen, Calculator, Flask, Languages, Palette, Globe, Music, Dumbbell } from 'lucide-react';
+import { BookOpen, Calculator, Beaker, Languages, Palette, Globe, Music, Dumbbell } from 'lucide-react';
 
 const SubjectsPage = () => {
   const subjects = [
     { name: 'Mathematics', icon: <Calculator className="h-6 w-6" />, color: 'bg-blue-500' },
-    { name: 'Science', icon: <Flask className="h-6 w-6" />, color: 'bg-green-500' },
+    { name: 'Science', icon: <Beaker className="h-6 w-6" />, color: 'bg-green-500' },
     { name: 'Language Arts', icon: <Languages className="h-6 w-6" />, color: 'bg-purple-500' },
     { name: 'Social Studies', icon: <Globe className="h-6 w-6" />, color: 'bg-amber-500' },
     { name: 'Art', icon: <Palette className="h-6 w-6" />, color: 'bg-pink-500' },

@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -43,6 +44,110 @@ const generateAssistantResponse = (message: string, profile: StudentProfile, pre
   
   if (hasRepeatedQuestion) {
     return `Let's work on this together, ${profile.name}. I'll help guide you through it step by step.`;
+  }
+  
+  // Check for exercise requests
+  if (message.toLowerCase().includes('exercise') || 
+      message.toLowerCase().includes('practice') || 
+      message.toLowerCase().includes('activity')) {
+    
+    if (message.toLowerCase().includes('number') || message.toLowerCase().includes('count')) {
+      // Number exercises based on complexity mentioned
+      if (message.toLowerCase().includes('1 to 5') || message.toLowerCase().includes('1-5')) {
+        return `Great choice, ${profile.name}! Here are some fun exercises to learn numbers 1-5:
+
+📋 **Exercise 1: Count & Touch**
+- Touch your nose 1 time
+- Touch your shoulders 2 times
+- Tap your head 3 times
+- Clap your hands 4 times
+- Jump 5 times
+
+📋 **Exercise 2: Draw & Count**
+- Draw 1 circle ⭕
+- Draw 2 squares ◻️◻️
+- Draw 3 triangles 🔺🔺🔺
+- Draw 4 stars ⭐⭐⭐⭐
+- Draw 5 flowers 🌸🌸🌸🌸🌸
+
+📋 **Exercise 3: Find & Match**
+- Find 1 book 📕
+- Find 2 socks 🧦🧦
+- Find 3 toys 🧸🧸🧸
+- Find 4 crayons 🖍️🖍️🖍️🖍️
+- Find 5 buttons 🔘🔘🔘🔘🔘
+
+Which exercise would you like to try first? Or would you like a different type of number activity?`;
+      } else {
+        return `Here are some interactive exercises to help you learn numbers, ${profile.name}!
+
+📋 **Counting Scavenger Hunt**
+Find and count objects around you:
+- Find 3 blue things
+- Find 5 soft things
+- Find 7 small objects
+- Find 10 items that start with the letter 'B'
+
+📋 **Number Pattern Game**
+Continue these patterns:
+- 2, 4, 6, ____, ____, ____
+- 5, 10, 15, ____, ____, ____
+- 1, 3, 5, 7, ____, ____, ____
+
+📋 **Draw & Count Challenge**
+Draw these and count them:
+- Draw 4 flowers and 3 butterflies. How many things did you draw in total?
+- Draw 6 circles and cross out 2. How many are left?
+- Draw 8 stars and add 2 more. How many stars now?
+
+Would you like to try one of these activities, or would you prefer a different exercise?`;
+      }
+    }
+    
+    if (message.toLowerCase().includes('math') || message.toLowerCase().includes('addition') || 
+        message.toLowerCase().includes('subtraction')) {
+      return `Here are some fun math exercises, ${profile.name}!
+
+📋 **Picture Addition**
+Draw dots and count them together:
+- Draw 2 dots, then 3 more dots. Count how many dots altogether.
+- Draw 4 stars, then 2 more stars. How many stars total?
+- Draw 5 circles, then 3 more circles. How many circles now?
+
+📋 **Subtraction Stories**
+- You have 5 apples and eat 2. How many apples are left?
+- There are 7 birds on a tree. 4 fly away. How many birds are still on the tree?
+- You pick 8 flowers and give 3 to your friend. How many flowers do you have now?
+
+📋 **Number Bond Practice**
+What numbers can make:
+- 5 (examples: 2+3, 1+4, 0+5)
+- 7 (examples: 3+4, 2+5, 1+6)
+- 10 (examples: 5+5, 6+4, 7+3)
+
+Which activity would you like to try first?`;
+    }
+    
+    // Generic learning exercises if topic isn't specified
+    return `Here are some interactive learning exercises for you, ${profile.name}:
+
+📋 **Number Recognition Game**
+- I'll describe a number, you guess which one it is!
+- It comes after 2 but before 4. Which number is it?
+- It's 1 more than 4. Which number is it?
+- It's 2 less than 7. Which number is it?
+
+📋 **Count & Move Activity**
+- Jump 3 times and clap 2 times. How many actions did you do total?
+- Hop 5 times and spin around 1 time. How many movements altogether?
+- Touch your toes 4 times and your nose 4 times. How many touches in all?
+
+📋 **Everyday Math Challenge**
+- Count the windows in your home
+- Count how many steps it takes to walk from your bedroom to the kitchen
+- Find 5 things that come in pairs (like socks, shoes, etc.)
+
+Would you like to try one of these activities or would you like something different?`;
   }
   
   if (message.toLowerCase().includes('learn') && 

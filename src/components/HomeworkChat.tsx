@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -46,13 +45,46 @@ const generateAssistantResponse = (message: string, profile: StudentProfile, pre
     return `Let's work on this together, ${profile.name}. I'll help guide you through it step by step.`;
   }
   
-  // Check for exercise requests
+  if (message.toLowerCase().includes('numbers') || 
+      message.toLowerCase().includes('counting') || 
+      message.toLowerCase().includes('learn numbers')) {
+    return `Great! Let's learn numbers together, ${profile.name}. We'll start with numbers 1 to 5.
+
+🔢 **Number Learning Journey**
+
+1️⃣ One: 
+- Hold up 1 finger
+- Draw a single line
+- Find 1 special object in your room
+
+2️⃣ Two:
+- Hold up 2 fingers
+- Draw two parallel lines
+- Find a pair of something (socks, shoes)
+
+3️⃣ Three:
+- Hold up 3 fingers
+- Draw a triangle
+- Count 3 of your favorite toys
+
+4️⃣ Four:
+- Hold up 4 fingers
+- Draw a square
+- Make 4 different sounds
+
+5️⃣ Five:
+- Hold up your whole hand (5 fingers!)
+- Draw a star
+- Do 5 fun actions (jump, clap, spin)
+
+Would you like to practice these numbers? Try describing what you see or do with each number!`;
+  }
+  
   if (message.toLowerCase().includes('exercise') || 
       message.toLowerCase().includes('practice') || 
       message.toLowerCase().includes('activity')) {
     
     if (message.toLowerCase().includes('number') || message.toLowerCase().includes('count')) {
-      // Number exercises based on complexity mentioned
       if (message.toLowerCase().includes('1 to 5') || message.toLowerCase().includes('1-5')) {
         return `Great choice, ${profile.name}! Here are some fun exercises to learn numbers 1-5:
 
@@ -100,7 +132,7 @@ Draw these and count them:
 - Draw 6 circles and cross out 2. How many are left?
 - Draw 8 stars and add 2 more. How many stars now?
 
-Would you like to try one of these activities, or would you prefer a different exercise?`;
+Would you like to try one of these activities, or would you prefer a different type of number activity?`;
       }
     }
     
@@ -128,7 +160,6 @@ What numbers can make:
 Which activity would you like to try first?`;
     }
     
-    // Generic learning exercises if topic isn't specified
     return `Here are some interactive learning exercises for you, ${profile.name}:
 
 📋 **Number Recognition Game**

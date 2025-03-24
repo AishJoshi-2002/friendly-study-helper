@@ -243,6 +243,58 @@ Would you like to practice counting objects too? I can show you some examples!`;
     }
   }
   
+  if (message.toLowerCase().includes('fruit') && 
+      (message.toLowerCase().includes('name') || message.toLowerCase().includes('tell me'))) {
+    return `Hi ${profile.name}! Here are 5 fruits you might enjoy:
+
+1. 🍎 Apple - Crunchy and sweet!
+2. 🍌 Banana - Yellow and curved, easy to peel.
+3. 🍓 Strawberry - Small, red, and juicy.
+4. 🍊 Orange - Round and juicy, with a peel you can remove.
+5. 🍇 Grapes - Small round fruits that grow in bunches.
+
+Would you like to learn about more fruits or learn something about these fruits?`;
+  }
+  
+  if (message.toLowerCase().includes('vegetable') && 
+      (message.toLowerCase().includes('name') || message.toLowerCase().includes('tell me'))) {
+    return `Hi ${profile.name}! Here are 5 vegetables you might know:
+
+1. 🥕 Carrot - Orange and crunchy, grows underground.
+2. 🥦 Broccoli - Looks like tiny trees, green and nutritious.
+3. 🥔 Potato - Brown on outside, white inside, grows underground.
+4. 🌽 Corn - Yellow kernels that grow on a cob.
+5. 🍅 Tomato - Red and juicy (technically a fruit, but often used as a vegetable).
+
+Would you like to learn about more vegetables or learn something interesting about these?`;
+  }
+  
+  if (message.toLowerCase().includes('animal') && 
+      (message.toLowerCase().includes('name') || message.toLowerCase().includes('tell me'))) {
+    return `Hello ${profile.name}! Here are 5 interesting animals:
+
+1. 🐘 Elephant - The largest land animal with a long trunk.
+2. 🦁 Lion - Known as the king of the jungle with a magnificent mane.
+3. 🐬 Dolphin - Smart swimming mammal that lives in the ocean.
+4. 🦒 Giraffe - Has the longest neck of any animal.
+5. 🐼 Panda - Black and white bear that loves to eat bamboo.
+
+Would you like to learn more about any of these animals?`;
+  }
+  
+  if (message.toLowerCase().includes('color') && 
+      (message.toLowerCase().includes('name') || message.toLowerCase().includes('tell me'))) {
+    return `Hi ${profile.name}! Here are 5 colors you might see every day:
+
+1. 🔴 Red - Like apples, fire trucks, and strawberries.
+2. 🔵 Blue - Like the sky, ocean, and blueberries.
+3. 🟢 Green - Like grass, leaves, and frogs.
+4. 🟡 Yellow - Like the sun, bananas, and lemons.
+5. 🟣 Purple - Like grapes, lavender, and eggplants.
+
+Can you think of other things that have these colors?`;
+  }
+  
   const genericResponses = [
     `Hi ${profile.name}! I'd be happy to help with your homework. What specific topic are you studying?`,
     `Hey ${profile.name}! What question would you like help with today?`,

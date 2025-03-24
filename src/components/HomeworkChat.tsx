@@ -282,6 +282,19 @@ Would you like to learn about more vegetables or learn something interesting abo
 Would you like to learn more about any of these animals?`;
   }
   
+  if (message.toLowerCase().includes('mammal') && 
+      (message.toLowerCase().includes('name') || message.toLowerCase().includes('tell me'))) {
+    return `Hi ${profile.name}! Here are 5 interesting mammals:
+
+1. 🐋 Blue Whale - The largest mammal on Earth, can grow up to 100 feet long!
+2. 🦇 Bat - The only mammal that can truly fly.
+3. 🦔 Hedgehog - Small mammals covered in spines for protection.
+4. 🐘 Elephant - Highly intelligent mammals with amazing memory.
+5. 🦍 Gorilla - Highly social mammals that share 98% of their DNA with humans.
+
+Would you like to learn more about any of these mammals?`;
+  }
+  
   if (message.toLowerCase().includes('color') && 
       (message.toLowerCase().includes('name') || message.toLowerCase().includes('tell me'))) {
     return `Hi ${profile.name}! Here are 5 colors you might see every day:

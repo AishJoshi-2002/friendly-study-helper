@@ -45,13 +45,10 @@ const generateAssistantResponse = (message: string, profile: StudentProfile, pre
     return `Let's work on this together, ${profile.name}. I'll help guide you through it step by step.`;
   }
   
-  if (gradeLevel === 'elementary') {
-    if (message.toLowerCase().includes('count')) {
-      return `Hi ${profile.name}! Counting is fun! Let's use some pictures to help. 🍎🍎🍎 How many apples do you see? Count them one by one, pointing at each apple as you count. Take your time!`;
-    }
-    if (message.toLowerCase().includes('learning counting') || message.toLowerCase().includes('learn') && message.toLowerCase().includes('number')) {
-      return `Great, ${profile.name}! Let's learn counting from 1 to 10. We'll go one by one:
-      
+  if (message.toLowerCase().includes('learn') && 
+     (message.toLowerCase().includes('number') || message.toLowerCase().includes('count'))) {
+    return `Great, ${profile.name}! Let's learn counting from 1 to 10. Here's a fun way to practice:
+
 1️⃣ - One: Show me 1 finger!
 2️⃣ - Two: Can you show me 2 fingers?
 3️⃣ - Three: Now try showing 3 fingers!
@@ -62,15 +59,21 @@ const generateAssistantResponse = (message: string, profile: StudentProfile, pre
 8️⃣ - Eight: Almost there!
 9️⃣ - Nine: Just one more!
 🔟 - Ten: Excellent job counting to 10! 🎉
-      
-Which number would you like to practice more?`;
+
+Would you like to practice counting objects too? I can show you some examples!`;
+  }
+  
+  if (gradeLevel === 'elementary') {
+    if (message.toLowerCase().includes('count')) {
+      return `Hi ${profile.name}! Counting is fun! Let's use some pictures to help. 🍎🍎🍎 How many apples do you see? Count them one by one, pointing at each apple as you count. Take your time!`;
     }
+    
     if (message.toLowerCase().includes('apple')) {
       const userCount = message.match(/\d+/);
       const actualCount = 3;
       
       if (userCount && parseInt(userCount[0]) === actualCount) {
-        return `That's correct, ${profile.name}! 🎉 There are exactly 3 apples. You're doing a great job counting!`;
+        return `That's correct, ${profile.name}! 🎉 There are exactly 3 apples. You're doing a great job counting! Would you like to try counting something else?`;
       } else {
         return `Let's try counting the apples again, ${profile.name}. Look at each apple emoji 🍎🍎🍎 and count them one by one. How many do you see?`;
       }
